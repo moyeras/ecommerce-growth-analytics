@@ -15,9 +15,6 @@ profiles.yml
 *.key
 .env
 
-# allow safe GitHub Actions dbt profile
-!ci/profiles.yml
-
 # OS/editor
 .DS_Store
 .vscode/

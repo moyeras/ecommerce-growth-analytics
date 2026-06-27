@@ -62,17 +62,6 @@ jobs:
           EOF
           chmod 600 /home/runner/.dbt/keys/rsa_key.p8
 
-      - name: Show dbt files
-        run: |
-          echo "Current folder:"
-          pwd
-          echo "Project files:"
-          ls -la
-          echo ".dbt files:"
-          ls -la /home/runner/.dbt
-          echo "Profile preview:"
-          sed -n '1,25p' /home/runner/.dbt/profiles.yml
-
       - name: Check dbt connection
         run: dbt debug
 
