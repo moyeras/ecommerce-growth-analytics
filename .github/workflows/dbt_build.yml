@@ -39,6 +39,15 @@ jobs:
           printf "%s" "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /home/runner/.dbt/keys/rsa_key.p8
           chmod 600 /home/runner/.dbt/keys/rsa_key.p8
 
+      - name: Show repository files
+        run: |
+          pwd
+          ls -la
+          echo "---- ci folder ----"
+          ls -la ci
+          echo "---- ci profiles content preview ----"
+          sed -n '1,20p' ci/profiles.yml
+
       - name: Check dbt connection
         run: dbt debug --profiles-dir ci
 
