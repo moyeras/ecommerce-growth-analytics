@@ -35,21 +35,21 @@ jobs:
 
       - name: Create dbt profile
         run: |
-          mkdir -p ci
-          cat > ci/profiles.yml <<'EOF'
+          mkdir -p /home/runner/.dbt
+          cat > /home/runner/.dbt/profiles.yml <<EOF
           ecommerce_growth_analytics:
             target: prod
             outputs:
               prod:
                 type: snowflake
-                account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-                user: "{{ env_var('SNOWFLAKE_USER') }}"
-                private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
-                private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE') }}"
-                role: "{{ env_var('SNOWFLAKE_ROLE') }}"
-                database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
-                warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
-                schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"
+                account: "${SNOWFLAKE_ACCOUNT}"
+                user: "${SNOWFLAKE_USER}"
+                private_key_path: "${SNOWFLAKE_PRIVATE_KEY_PATH}"
+                private_key_passphrase: "${SNOWFLAKE_PRIVATE_KEY_PASSPHRASE}"
+                role: "${SNOWFLAKE_ROLE}"
+                database: "${SNOWFLAKE_DATABASE}"
+                warehouse: "${SNOWFLAKE_WAREHOUSE}"
+                schema: "${SNOWFLAKE_SCHEMA}"
                 threads: 4
                 client_session_keep_alive: false
           EOF
@@ -57,25 +57,27 @@ jobs:
       - name: Write Snowflake private key
         run: |
           mkdir -p /home/runner/.dbt/keys
-          cat > /home/runner/.dbt/keys/rsa_key.p8 <<'EOF'
+          cat > /home/runner/.dbt/keys/rsa_key.p8 <<EOF
           ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
           EOF
           chmod 600 /home/runner/.dbt/keys/rsa_key.p8
 
-      - name: Show dbt profile exists
+      - name: Show dbt files
         run: |
+          echo "Current folder:"
           pwd
+          echo "Project files:"
           ls -la
-          echo "---- ci folder ----"
-          ls -la ci
-          echo "---- profiles.yml ----"
-          sed -n '1,25p' ci/profiles.yml
+          echo ".dbt files:"
+          ls -la /home/runner/.dbt
+          echo "Profile preview:"
+          sed -n '1,25p' /home/runner/.dbt/profiles.yml
 
       - name: Check dbt connection
-        run: dbt debug --profiles-dir ci
+        run: dbt debug
 
       - name: Build dbt project
-        run: dbt build --profiles-dir ci
+        run: dbt build
 
       - name: Generate dbt docs
-        run: dbt docs generate --profiles-dir ci
+        run: dbt docs generate
