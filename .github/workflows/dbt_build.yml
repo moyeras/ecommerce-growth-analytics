@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -33,20 +33,43 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install "dbt-core==1.11.11" "dbt-snowflake==1.11.6"
 
+      - name: Create dbt profile
+        run: |
+          mkdir -p ci
+          cat > ci/profiles.yml <<'EOF'
+          ecommerce_growth_analytics:
+            target: prod
+            outputs:
+              prod:
+                type: snowflake
+                account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+                user: "{{ env_var('SNOWFLAKE_USER') }}"
+                private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+                private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE') }}"
+                role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+                database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+                warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+                schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"
+                threads: 4
+                client_session_keep_alive: false
+          EOF
+
       - name: Write Snowflake private key
         run: |
           mkdir -p /home/runner/.dbt/keys
-          printf "%s" "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /home/runner/.dbt/keys/rsa_key.p8
+          cat > /home/runner/.dbt/keys/rsa_key.p8 <<'EOF'
+          ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          EOF
           chmod 600 /home/runner/.dbt/keys/rsa_key.p8
 
-      - name: Show repository files
+      - name: Show dbt profile exists
         run: |
           pwd
           ls -la
           echo "---- ci folder ----"
           ls -la ci
-          echo "---- ci profiles content preview ----"
-          sed -n '1,20p' ci/profiles.yml
+          echo "---- profiles.yml ----"
+          sed -n '1,25p' ci/profiles.yml
 
       - name: Check dbt connection
         run: dbt debug --profiles-dir ci
