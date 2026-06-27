@@ -1,0 +1,207 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned customer records from the raw customers source."
+    columns:
+      - name: customer_id
+        description: "Unique customer identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: email
+        description: "Customer email address, standardized to lowercase."
+        data_tests:
+          - not_null
+
+      - name: acquisition_channel
+        description: "Marketing channel that acquired the customer."
+
+      - name: created_at
+        description: "Date when the customer was created."
+
+  - name: stg_products
+    description: "Cleaned product catalog."
+    columns:
+      - name: product_id
+        description: "Unique product identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: product_name
+        description: "Product display name."
+        data_tests:
+          - not_null
+
+      - name: category
+        description: "Product category such as Rings, Necklaces, Earrings, Bracelets."
+
+      - name: retail_price
+        description: "Selling price of the product."
+
+      - name: unit_cost
+        description: "Estimated unit cost of the product."
+
+  - name: stg_orders
+    description: "Cleaned order-level transactions."
+    columns:
+      - name: order_id
+        description: "Unique order identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Customer who placed the order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: order_status
+        description: "Current order status."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['completed', 'refunded', 'cancelled']
+
+      - name: order_total
+        description: "Final order value after discount and shipping."
+
+      - name: marketing_channel
+        description: "Marketing channel attributed to the order."
+
+  - name: stg_order_items
+    description: "Cleaned order line items showing products inside each order."
+    columns:
+      - name: order_item_id
+        description: "Unique order item identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Order associated with the item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+      - name: product_id
+        description: "Product sold in the order item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+
+      - name: quantity
+        description: "Number of product units in the order item."
+
+      - name: line_total
+        description: "Total value of this order item."
+
+  - name: stg_payments
+    description: "Cleaned payment transactions."
+    columns:
+      - name: payment_id
+        description: "Unique payment identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Order connected to this payment."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+      - name: payment_status
+        description: "Payment status."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['paid']
+
+      - name: payment_amount
+        description: "Amount paid by the customer."
+
+  - name: stg_refunds
+    description: "Cleaned refund transactions."
+    columns:
+      - name: refund_id
+        description: "Unique refund identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Order connected to this refund."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+      - name: refund_amount
+        description: "Amount refunded to the customer."
+
+      - name: refund_reason
+        description: "Reason for the refund."
+
+  - name: stg_web_sessions
+    description: "Cleaned website session and funnel data."
+    columns:
+      - name: session_id
+        description: "Unique web session identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Customer identifier when the web session is known; null for anonymous visitors."
+
+      - name: marketing_channel
+        description: "Channel that brought the session."
+
+      - name: device_type
+        description: "Device type used during the session."
+
+      - name: purchases
+        description: "Number of purchases in the session."
+
+  - name: stg_marketing_spend
+    description: "Cleaned marketing spend by date, campaign, and channel."
+    columns:
+      - name: spend_date
+        description: "Date of marketing spend."
+        data_tests:
+          - not_null
+
+      - name: marketing_channel
+        description: "Marketing channel where spend occurred."
+        data_tests:
+          - not_null
+
+      - name: campaign_name
+        description: "Campaign name."
+
+      - name: spend_amount
+        description: "Amount spent on the campaign."
+
+      - name: impressions
+        description: "Number of campaign impressions."
+
+      - name: clicks
+        description: "Number of campaign clicks."

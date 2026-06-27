@@ -1,0 +1,20 @@
+# dbt generated files
+target/
+dbt_packages/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+dbt_venv/
+
+# secrets - never commit
+profiles.yml
+*.p8
+*.key
+.env
+
+# OS/editor
+.DS_Store
+.vscode/

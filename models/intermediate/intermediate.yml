@@ -1,0 +1,90 @@
+version: 2
+
+models:
+  - name: int_order_items_enriched
+    description: "Order item level model enriched with order and product attributes."
+    columns:
+      - name: order_item_id
+        description: "Unique order item identifier."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Order associated with the item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+      - name: customer_id
+        description: "Customer associated with the order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: product_id
+        description: "Product associated with the order item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+
+      - name: category
+        description: "Product category."
+
+      - name: line_total
+        description: "Revenue amount for this order item."
+
+      - name: estimated_item_cost
+        description: "Estimated item cost based on product unit cost and quantity."
+
+      - name: estimated_gross_profit
+        description: "Estimated gross profit for the order item."
+
+  - name: int_order_financials
+    description: "Order-level financial model combining orders, payments, and refunds."
+    columns:
+      - name: order_id
+        description: "Unique order identifier."
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+      - name: customer_id
+        description: "Customer who placed the order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: order_status
+        description: "Order status."
+
+      - name: order_total
+        description: "Original final order value after discount and shipping."
+
+      - name: total_paid_amount
+        description: "Total successful payment amount for the order."
+
+      - name: total_refund_amount
+        description: "Total refund amount for the order."
+
+      - name: net_revenue
+        description: "Revenue after cancellation and refund logic."
+
+      - name: has_refund
+        description: "Boolean flag showing whether the order has a refund."

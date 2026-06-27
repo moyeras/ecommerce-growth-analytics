@@ -1,0 +1,86 @@
+version: 2
+
+sources:
+  - name: ecommerce_raw
+    database: ECOMMERCE_BI
+    schema: RAW
+    description: "Raw eCommerce data loaded from CSV files into Snowflake."
+    tables:
+      - name: customers
+        identifier: RAW_CUSTOMERS
+        description: "Raw customer records."
+        columns:
+          - name: customer_id
+            data_tests:
+              - not_null
+              - unique
+          - name: email
+            data_tests:
+              - not_null
+
+      - name: products
+        identifier: RAW_PRODUCTS
+        description: "Raw product catalog."
+        columns:
+          - name: product_id
+            data_tests:
+              - not_null
+              - unique
+          - name: product_name
+            data_tests:
+              - not_null
+
+      - name: orders
+        identifier: RAW_ORDERS
+        description: "Raw order-level transactions."
+        columns:
+          - name: order_id
+            data_tests:
+              - not_null
+              - unique
+          - name: customer_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('ecommerce_raw', 'customers')
+                    field: customer_id
+
+      - name: order_items
+        identifier: RAW_ORDER_ITEMS
+        description: "Raw order line items."
+        columns:
+          - name: order_item_id
+            data_tests:
+              - not_null
+              - unique
+          - name: order_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('ecommerce_raw', 'orders')
+                    field: order_id
+          - name: product_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('ecommerce_raw', 'products')
+                    field: product_id
+
+      - name: payments
+        identifier: RAW_PAYMENTS
+        description: "Raw payment transactions."
+
+      - name: refunds
+        identifier: RAW_REFUNDS
+        description: "Raw refund transactions."
+
+      - name: web_sessions
+        identifier: RAW_WEB_SESSIONS
+        description: "Raw website funnel sessions."
+
+      - name: marketing_spend
+        identifier: RAW_MARKETING_SPEND
+        description: "Raw marketing spend by date and channel."
